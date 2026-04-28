@@ -3,126 +3,93 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Safety Band | Pro Monitor</title>
+    <title>Safety Band Dashboard</title>
     <style>
-        :root {
-            --bg: #020617;
-            --card: #1e293b;
-            --safe: #22c55e;
-            --fall: #ef4444;
-            --blue: #38bdf8;
-            --text: #f8fafc;
-            --dim: #64748b;
-        }
-
-        body { background-color: var(--bg); color: var(--text); font-family: 'Inter', -apple-system, sans-serif; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
-        header { text-align: center; margin-bottom: 30px; }
-        #clock { font-size: 4.5rem; font-weight: 900; color: var(--blue); margin: 0; letter-spacing: -2px; }
-        .date-text { color: var(--dim); font-size: 1.2rem; font-weight: 500; }
-        #api-status { font-size: 0.8rem; margin-top: 10px; padding: 5px 12px; border-radius: 20px; background: rgba(255,255,255,0.05); display: inline-block; }
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 25px; width: 100%; max-width: 1100px; margin-bottom: 30px; }
-        .box { background: var(--card); padding: 35px; border-radius: 28px; text-align: center; border: 1px solid rgba(255, 255, 255, 0.08); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2); }
-        .label { color: #94a3b8; text-transform: uppercase; font-size: 0.9rem; letter-spacing: 2px; font-weight: 600; margin-bottom: 10px; }
-        .val { font-size: 3.2rem; font-weight: 800; margin: 10px 0; }
-        .unit { font-size: 1.1rem; color: var(--dim); }
-        .status-safe { color: var(--safe); }
-        .status-fall { color: var(--fall); animation: pulse 1s infinite; }
-        @keyframes pulse { 50% { opacity: 0.6; transform: scale(1.03); } }
-        .map-section { width: 100%; max-width: 1100px; height: 450px; background: var(--card); border-radius: 28px; overflow: hidden; border: 1px solid rgba(255, 255, 255, 0.1); }
-        #overlay { display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.95); z-index: 1000; justify-content: center; align-items: center; backdrop-filter: blur(10px); }
-        .alert-card { background: var(--fall); padding: 60px; border-radius: 40px; text-align: center; box-shadow: 0 0 80px rgba(239, 68, 68, 0.5); }
-        .alert-card h1 { font-size: 5rem; margin: 0; font-weight: 900; }
-        .btn-safe { background: white; color: black; border: none; padding: 20px 50px; border-radius: 60px; font-weight: 900; cursor: pointer; margin-top: 40px; font-size: 1.4rem; }
+        body { background-color: #020617; color: #f8fafc; font-family: sans-serif; text-align: center; padding: 20px; transition: background-color 0.5s; }
+        #clock { font-size: 4rem; color: #38bdf8; font-weight: bold; margin-bottom: 5px; }
+        #api-status { padding: 5px 15px; background: #1e293b; border-radius: 20px; font-size: 0.9rem; display: inline-block; margin-bottom: 20px;}
+        .grid { display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; margin: 20px 0 40px 0; }
+        .box { background: #1e293b; padding: 30px; border-radius: 20px; width: 250px; border: 1px solid #334155; }
+        .val { font-size: 3rem; font-weight: bold; margin: 10px 0; }
+        .safe { color: #22c55e; }
+        .fall { color: #ef4444; animation: blink 1s infinite; }
+        @keyframes blink { 50% { opacity: 0.5; } }
+        iframe { border-radius: 20px; border: 1px solid #334155; }
     </style>
 </head>
 <body>
 
-    <header>
-        <div id="clock">00:00:00</div>
-        <div id="date" class="date-text">Syncing...</div>
-        <div id="api-status">Connecting to Blynk Cloud...</div>
-    </header>
+    <div id="clock">00:00:00</div>
+    <div id="api-status" style="color: yellow;">Waiting for Blynk...</div>
 
-    <div class="stats-grid">
+    <div class="grid">
         <div class="box">
-            <div class="label">User Identification</div>
-            <div class="val" style="color: #cbd5e1;">ZX-233</div>
-            <div class="unit">Hardware: ESP32-WROOM</div>
+            <div style="color: #94a3b8; font-weight: bold; letter-spacing: 1px;">HEART RATE</div>
+            <div id="bpm" class="val">--</div>
+            <div style="color: #64748b;">BPM</div>
         </div>
         <div class="box">
-            <div class="label">Vitals: Heart Rate</div>
-            <div class="val" id="bpm-display">--</div>
-            <div class="unit">BPM</div>
-        </div>
-        <div class="box">
-            <div class="label">Safety Status</div>
-            <div id="status-val" class="val status-safe">SAFE</div>
-            <div class="unit" id="status-desc">Environment Secure</div>
+            <div style="color: #94a3b8; font-weight: bold; letter-spacing: 1px;">SAFETY STATUS</div>
+            <div id="status" class="val safe">SAFE</div>
+            <div id="status-desc" style="color: #64748b;">Environment Secure</div>
         </div>
     </div>
 
-    <div class="map-section">
-        <iframe width="100%" height="100%" frameborder="0" src="https://www.openstreetmap.org/export/embed.html?bbox=100.4816%2C5.1386%2C100.4996%2C5.1526&amp;layer=mapnik&amp;marker=5.1456%2C100.4906"></iframe>
-    </div>
+    <iframe width="100%" height="400" style="max-width: 800px;" src="https://www.openstreetmap.org/export/embed.html?bbox=100.4816,5.1386,100.4996,5.1526&layer=mapnik&marker=5.1456,100.4906"></iframe>
 
-    <div id="overlay">
-        <div class="alert-card">
-            <h1>🚨 FALL!!</h1>
-            <p style="font-size: 1.8rem; margin: 20px 0;">Heavy Impact Detected by Safety Band!</p>
-            <button class="btn-safe" onclick="closeAlert()">I AM SAFE</button>
-        </div>
-    </div>
-<script>
+    <script>
         const TOKEN = "10VutsRka_hwFWOoH_Qu7jG-zKsSY5aB";
-        const REGION = "sgp1"; 
-        const BLYNK_API_URL = https://${REGION}.blynk.cloud/external/api/get?token=${TOKEN};
+        const URL = "https://sgp1.blynk.cloud/external/api/get?token=" + TOKEN + "&V0&V2";
 
-        function runClock() {
-            const now = new Date();
-            document.getElementById('clock').innerText = now.toLocaleTimeString([], { hour12: false });
-            document.getElementById('date').innerText = now.toLocaleDateString([], { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-        }
-        setInterval(runClock, 1000);
-        runClock();
+        // 1. Clock Logic
+        setInterval(() => {
+            document.getElementById('clock').innerText = new Date().toLocaleTimeString('en-US', {hour12: false});
+        }, 1000);
 
-        async function updateDashboard() {
-            const statusIndicator = document.getElementById('api-status');
+        // 2. Fetch Data Logic
+        async function getData() {
             try {
-                const res = await fetch(${BLYNK_API_URL}&V0&V2);
-                if (!res.ok) throw new Error("API Unreachable");
-                const data = await res.json();
+                let response = await fetch(URL);
+                if (!response.ok) throw new Error("Network Bad");
                 
-                statusIndicator.innerText = "Blynk Online | Last Sync: " + new Date().toLocaleTimeString();
-                statusIndicator.style.color = "#4ade80";
+                let data = await response.json();
+                
+                document.getElementById('api-status').innerText = "✅ Connected to Blynk Cloud";
+                document.getElementById('api-status').style.color = "#22c55e";
 
-                document.getElementById('bpm-display').innerText = data.V0 !== undefined ? data.V0 : "--";
-
-                const status = data.V2 ? data.V2.toUpperCase() : "SAFE";
-                const display = document.getElementById('status-val');
-                const desc = document.getElementById('status-desc');
-                const overlay = document.getElementById('overlay');
-
-                if (status.includes("FALL") || status.includes("SOS")) {
-                    display.innerText = "FALL!!";
-                    display.className = "val status-fall";
-                    desc.innerText = "EMERGENCY DETECTED";
-                    overlay.style.display = 'flex';
-                } else {
-                    display.innerText = "SAFE";
-                    display.className = "val status-safe";
-                    desc.innerText = "Environment Secure";
-                    overlay.style.display = 'none';
+                // Update BPM
+                if (data.V0 !== undefined) {
+                    document.getElementById('bpm').innerText = data.V0;
                 }
-            } catch (e) {
-                console.error(e);
-                statusIndicator.innerText = "Blynk Offline | Check Internet/Token";
-                statusIndicator.style.color = "#ef4444";
+ // Update Status (Handling Numbers!)
+                if (data.V2 !== undefined) {
+                    let statBox = document.getElementById('status');
+                    let statDesc = document.getElementById('status-desc');
+                    
+                    // If V2 equals 1, trigger FALL mode
+                    if (data.V2 == 1) { 
+                        statBox.innerText = "FALL!!";
+                        statBox.className = "val fall";
+                        statDesc.innerText = "EMERGENCY DETECTED";
+                        document.body.style.backgroundColor = "#450a0a"; // Flash dark red
+                    } 
+                    // If V2 equals 0, trigger SAFE mode
+                    else {
+                        statBox.innerText = "SAFE";
+                        statBox.className = "val safe";
+                        statDesc.innerText = "Environment Secure";
+                        document.body.style.backgroundColor = "#020617"; // Back to normal blue/black
+                    }
+                }
+            } catch (error) {
+                document.getElementById('api-status').innerText = "❌ Blynk Offline or Token Error";
+                document.getElementById('api-status').style.color = "#ef4444";
             }
         }
 
-        function closeAlert() { document.getElementById('overlay').style.display = 'none'; }
-        setInterval(updateDashboard, 2000);
-        updateDashboard();
+        // Run data fetch every 2 seconds
+        setInterval(getData, 2000);
+        getData();
     </script>
 </body>
 </html>
